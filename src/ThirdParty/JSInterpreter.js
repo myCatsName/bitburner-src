@@ -181,7 +181,7 @@ Interpreter.prototype.getErrorLineNumberMessage = function (lineNumber) {
       " (Line Number " +
       lineNumber +
       ". This line number is probably incorrect " +
-      "if your script is importing any functions. This is being worked on)"
+      "if your script is importing any functions.)"
     );
   }
 };
