@@ -771,6 +771,8 @@ interface GangGenInfo {
   respect: number;
   /** Respect earned per game cycle */
   respectGainRate: number;
+  /** Amount of Respect needed for next gang recruit, if possible */
+  respectForNextRecruit: number;
   /** Amount of territory held */
   territory: number;
   /** Clash chance */
@@ -870,6 +872,7 @@ interface GangMemberInfo {
   name: string;
   /** Currently assigned task */
   task: string;
+  /** Amount of Respect earned by member since they last Ascended */
   earnedRespect: number;
 
   /** Hack skill level */
@@ -924,24 +927,29 @@ interface GangMemberInfo {
   /** Charisma multiplier from ascensions */
   cha_asc_mult: number;
 
-  /** Total earned hack experience */
+  /** Total Hack Ascension points accumulated */
   hack_asc_points: number;
-  /** Total earned strength experience */
+  /** Total Strength Ascension points accumulated */
   str_asc_points: number;
-  /** Total earned defense experience */
+  /** Total Defense Ascension points accumulated */
   def_asc_points: number;
-  /** Total earned dexterity experience */
+  /** Total Dexterity Ascension points accumulated */
   dex_asc_points: number;
-  /** Total earned agility experience */
+  /** Total Agility Ascension points accumulated */
   agi_asc_points: number;
-  /** Total earned charisma experience */
+  /** Total Charisma Ascension points accumulated */
   cha_asc_points: number;
 
+  /** List of all non-Augmentation Equipment owned by gang member */
   upgrades: string[];
+  /** List of all Augmentations currently installed on gang member */
   augmentations: string[];
 
+  /** Per Cycle Rate this member is currently gaining Respect */
   respectGain: number;
+  /** Per Cycle Rate by which this member is affecting your gang's Wanted Level */
   wantedLevelGain: number;
+  /** Per Cycle Income for this gang member */
   moneyGain: number;
 }
 
@@ -2901,7 +2909,7 @@ export interface Bladeburner {
    *
    * @param type - Type of action.
    * @param name - Name of action. Must be an exact match.
-   * @param level - Optional action level at which to calculate the gain
+   * @param level - Optional number. Action level at which to calculate the gain. Will be the action's current level if not given.
    * @returns Average Bladeburner reputation gain for successfully completing the specified action.
    */
   getActionRepGain(type: string, name: string, level: number): number;
@@ -3392,6 +3400,18 @@ export interface Gang {
   getMemberNames(): string[];
 
   /**
+   * Rename a Gang member to a new unique name.
+   * @remarks
+   * RAM cost: 0 GB
+   *
+   * Rename a Gang Member if none already has the new name.
+   * @param memberName - Name of the member to change.
+   * @param newName - New name for that gang member.
+   * @returns True if successful, and false if not.
+   */
+  renameMember(memberName: string, newName: string): boolean;
+
+  /**
    * Get information about your gang.
    * @remarks
    * RAM cost: 2 GB
@@ -3444,6 +3464,26 @@ export interface Gang {
    */
   canRecruitMember(): boolean;
 
+  /**
+   * Check how many gang members you can currently recruit.
+   * @remarks
+   * RAM cost: 1 GB
+   *
+   * @returns Number indicating how many members can be recruited,
+   * considering current reputation and gang size.
+   */
+  getRecruitsAvailable(): number;
+
+  /**
+   * Check the amount of Respect needed for your next gang recruit.
+   * @remarks
+   * RAM cost: 1 GB
+   *
+   * @returns The static number value of Respect needed for the next
+   * recruit, with consideration to your current gang size.
+   * Returns `Infinity` if you have reached the gang size limit.
+   */
+  respectForNextRecruit(): number;
   /**
    * Recruit a new gang member.
    * @remarks
@@ -5101,7 +5141,7 @@ export interface NS {
    * Note that there is a maximum number of lines that a script stores in its logs. This is configurable in the game’s options.
    * If the function is called with no arguments, it will return the current script’s logs.
    *
-   * Otherwise, the fn, hostname/ip, and args… arguments can be used to get the logs from another script.
+   * Otherwise, the PID or filename, hostname/ip, and args… arguments can be used to get logs from another script.
    * Remember that scripts are uniquely identified by both their names and arguments.
    *
    * @example
@@ -5115,12 +5155,12 @@ export interface NS {
    * //Open logs from foo.js on the foodnstuff server that was run with the arguments [1, "test"]
    * ns.getScriptLogs("foo.js", "foodnstuff", 1, "test");
    * ```
-   * @param fn - Optional. Filename of script to get logs from.
+   * @param fn - Optional. Filename or PID of script to get logs from.
    * @param host - Optional. Hostname of the server that the script is on.
    * @param args - Arguments to identify which scripts to get logs for.
    * @returns Returns a string array, where each line is an element in the array. The most recently logged line is at the end of the array.
    */
-  getScriptLogs(fn?: string, host?: string, ...args: (string | number | boolean)[]): string[];
+  getScriptLogs(fn?: FilenameOrPID, host?: string, ...args: (string | number | boolean)[]): string[];
 
   /**
    * Get an array of recently killed scripts across all servers.
@@ -5152,7 +5192,7 @@ export interface NS {
    *
    * If the function is called with no arguments, it will open the current script’s logs.
    *
-   * Otherwise, the fn, hostname/ip, and args… arguments can be used to get the logs from another script.
+   * Otherwise, the PID or filename, hostname/ip, and args… arguments can be used to get the logs from another script.
    * Remember that scripts are uniquely identified by both their names and arguments.
    *
    * @example
@@ -5830,7 +5870,7 @@ export interface NS {
    * For example, fileExists(“brutessh.exe”) will work fine, even though the actual program
    * is named 'BruteSSH.exe'.
    *
-   * * @example
+   * @example
    * ```js
    * // The function call will return true if the script named foo.js exists on the foodnstuff server, and false otherwise.
    * ns.fileExists("foo.js", "foodnstuff");
@@ -5851,6 +5891,7 @@ export interface NS {
    *
    * Returns a boolean indicating whether the specified script is running on the target server.
    * If you use a PID instead of a filename, the hostname and args parameters are unnecessary.
+   * If hostname is omitted while filename is used as the first parameter, hostname defaults to the server the calling script is running on.
    * Remember that a script is semi-uniquely identified by both its name and its arguments.
    * (You can run multiple copies of scripts with the same arguments, but for the purposes of
    * functions like this that check based on filename, the filename plus arguments forms the key.)
@@ -5867,8 +5908,8 @@ export interface NS {
    * ns.isRunning("foo.js", "joesguns", 1, 5, "test");
    * ```
    * @param script - Filename or PID of script to check. This is case-sensitive.
-   * @param host - Hostname of target server.
-   * @param args - Arguments to specify/identify which scripts to search for.
+   * @param host - Hostname of target server. Optional, defaults to the server the calling script is running on.
+   * @param args - Arguments to specify/identify the script. Optional, when looking for scripts run without arguments.
    * @returns True if the specified script is running on the target server, and false otherwise.
    */
   isRunning(script: FilenameOrPID, host?: string, ...args: (string | number | boolean)[]): boolean;
@@ -5880,10 +5921,14 @@ export interface NS {
    *
    * Running with no args returns current script.
    * If you use a PID as the first parameter, the hostname and args parameters are unnecessary.
+   * If hostname is omitted while filename is used as the first parameter, hostname defaults to the server the calling script is running on.
+   * Remember that a script is semi-uniquely identified by both its name and its arguments.
+   * (You can run multiple copies of scripts with the same arguments, but for the purposes of
+   * functions like this that check based on filename, the filename plus arguments forms the key.)
    *
    * @param filename - Optional. Filename or PID of the script.
-   * @param hostname - Optional. Name of host server the script is running on.
-   * @param args  - Arguments to identify the script
+   * @param hostname - Hostname of target server. Optional, defaults to the server the calling script is running on.
+   * @param args  - Arguments to specify/identify the script. Optional, when looking for scripts run without arguments.
    * @returns The info about the running script if found, and null otherwise.
    */
   getRunningScript(
@@ -6051,7 +6096,7 @@ export interface NS {
    * If the port is full, the data will not be written.
    * Otherwise, the data will be written normally.
    *
-   * @param portNumber - Port or text file that will be written to.
+   * @param portNumber - Port to attempt to write to to. Must be a positive integer.
    * @param data - Data to write.
    * @returns True if the data is successfully written to the port, and false otherwise.
    */
@@ -6081,7 +6126,7 @@ export interface NS {
    * first element in the specified port without removing that element. If
    * the port is empty, the string “NULL PORT DATA” will be returned.
    *
-   * @param portNumber - Port to peek. Must be an integer between 1 and 20.
+   * @param portNumber - Port to peek. Must be a positive integer.
    * @returns Data in the specified port.
    */
   peek(portNumber: number): PortData;
@@ -6104,9 +6149,9 @@ export interface NS {
    *
    * Delete all data from the underlying queue.
    *
-   * @param handle - Port to clear.
+   * @param portNumber - Port to clear data from. Must be a positive integer.
    */
-  clearPort(handle: number): void;
+  clearPort(portNumber: number): void;
 
   /**
    * Write data to a port.
@@ -6114,6 +6159,7 @@ export interface NS {
    * RAM cost: 0 GB
    *
    * Write data to the given Netscript port.
+   * @param portNumber - Port to write to. Must be a positive integer.
    * @returns The data popped off the queue if it was full, or null if it was not full.
    */
   writePort(portNumber: number, data: string | number): PortData | null;
@@ -6125,6 +6171,7 @@ export interface NS {
    * Read data from that port. A port is a serialized queue.
    * This function will remove the first element from that queue and return it.
    * If the queue is empty, then the string “NULL PORT DATA” will be returned.
+   * @param portNumber - Port to read from. Must be a positive integer.
    * @returns The data read.
    */
   readPort(portNumber: number): PortData;
@@ -6138,7 +6185,7 @@ export interface NS {
    *
    * WARNING: Port Handles only work in NetscriptJS (Netscript 2.0). They will not work in Netscript 1.0.
    *
-   * @param portNumber - Port number. Must be an integer between 1 and 20.
+   * @param portNumber - Port number. Must be a positive integer.
    */
   getPortHandle(portNumber: number): NetscriptPort;
 

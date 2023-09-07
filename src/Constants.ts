@@ -83,9 +83,9 @@ export const CONSTANTS: {
   Donations: number; // number of blood/plasma/palette donation the dev have verified., boosts NFG
   LatestUpdate: string;
 } = {
-  VersionString: "2.4.1dev",
+  VersionString: "2.4.2dev",
   isDevBranch: true,
-  VersionNumber: 33,
+  VersionNumber: 34,
 
   /** Max level for any skill, assuming no multipliers. Determined by max numerical value in javascript for experience
    * and the skill level formula in Player.js. Note that all this means it that when experience hits MAX_INT, then
@@ -219,38 +219,33 @@ export const CONSTANTS: {
 
   // Also update doc/source/changelog.rst
   LatestUpdate: `
-## v2.4.1dev - Last changelog update 8/16/23
+## v2.4.2 dev changelog (last updated 9/5/23)
 
-See 2.4.0 changelog at:
-https://github.com/bitburner-official/bitburner-src/blob/stable/src/Documentation/ui/doc/changelog.md
-
-Some changes below include spoilers.
-
-### BUGFIX:
-
-* Fixed a bug where buying NeuroFlux Governor would buy one less level than expected (@zerbosh)
-* Fixed an issue that could cause the Coding Contract UI to become unreachable (@myCatsName)
-* Knowledge of Apollo aug no longer highlights the incorrect wires (@Snarling)
-* ns.sleeve.setToFactionWork no longer allows working for factions the player has not joined (@Snarling)
+See 2.4.1 changelog: https://github.com/bitburner-official/bitburner-src/blob/stable/src/Documentation/doc/changelog.md
 
 ### API CHANGES:
+#### GANG
+- Added ns.gang.getRecruitsAvailable: Gets the number of additional gang members that can currently be recruited (@myCatsName)
+- Added ns.gang.respectForNextRecruit: Gets the respect threshold for recruiting the next gang member (@myCatsName)
+- Added ns.gang.renameMember: Renames a gang member (@myCatsName)
 
-* Added ns.singularity.getAugmentationFactions to provide a list of factions that has a given augmentation (@myCatsName)
-* Added ns.stock.getConstants (@Snarling)
-* Added ownedAugs and ownedSF properties to ns.getResetInfo return value (@Snarling)
-* ns.corporation.getConstants now has a ram cost of 0 (@Snarling)
+### BUGFIX
+- UI: Faction augmentation page updates more reliably (@zerbosh)
+- Bladeburner UI: Fix an issue that could cause NaN success chance to display (@zerbosh)
+- Terminal: Prevent recursive aliases from being resolved (@ficocelliguy)
 
-### CODEBASE / DOCS / MISC:
-
-* Added a new theme "zerenity" (@Zelow79)
-* Successes for next level is now accurate in the UI for Bladeburner operations (@myCatsName)
-* Reorganize game constants (@zerbosh)
-* Reorganize ingame documentation folder structure, simplify documentation bundling (@Snarling)
-* IP Address coding contract accepts single-quoted entries (@myCatsName)
-* Updated an outdated message on ns.killall logs (@myCatsName)
-* Updated documentation for ns.share and ns.getSharePower (@myCatsName)
-* Removed function (like ns.getServerRam) are no longer shown when enumerating ns entries. (@Snarling)
-* Removed more references to ReadTheDocs that remained after 2.4.0 (@hydroflame) 
-* Fixed some typos/spacing (@myCatsName)
+### MISC / UI / DOCS
+- Tail windows now remain on the page, but hidden, when on pages like Infiltration where they should not be shown. This will impact any React content added via ns.printRaw, as the content will no longer be unmounted and remounted when navigating to/from Infiltration. (@ficocelliguy)
+- Improved error messages for ns.getPurchasedServer (@ficocelliguy)
+- Improved pagination of Active Scripts page (@Ookamiko, @ficocelliguy)
+- Various UI improvements for Gang (@myCatsName)
+- Icarus message no longer shows repeatedly for players that are in the endgame. (@ficocelliguy)
+- Remove work completion dialogs when performing an augmentation install (@ficocelliguy)
+- Tweaked some number formatting to look better in Corp and Stats page (@zerbosh)
+- Improve documentation for ports (@muesli4brekkies)
+- Updated documentation for ns.tail and ns.getScriptLogs to make it clear a PID can be used. (@myCatsName)
+- Improve documentation for FilenameOrPID functions (@VictorS)
+- Added initial ingame documentation for Bladeburner and Gang (@myCatsName)
+- Improve API documentation for Bladeburner and Gang functions (@myCatsName)
 `,
 };

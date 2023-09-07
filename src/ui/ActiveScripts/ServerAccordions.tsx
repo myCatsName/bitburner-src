@@ -9,6 +9,7 @@ import { ServerAccordion } from "./ServerAccordion";
 import TextField from "@mui/material/TextField";
 import List from "@mui/material/List";
 import TablePagination from "@mui/material/TablePagination";
+import Grid from "@mui/material/Grid";
 import { WorkerScript } from "../../Netscript/WorkerScript";
 import { GetServer } from "../../Server/AllServers";
 import { BaseServer } from "../../Server/BaseServer";
@@ -67,7 +68,12 @@ export function ServerAccordions(props: IProps): React.ReactElement {
       };
       data = serverToScriptMap[server.hostname];
     }
-    if (data !== undefined) data.workerScripts.push(ws);
+    if (data !== undefined) {
+      // Add only scripts that correspond to the filter
+      if (ws.hostname.includes(filter) || ws.name.includes(filter)) {
+        data.workerScripts.push(ws);
+      }
+    }
   }
 
   // Match filter in the scriptname part of the key
@@ -83,15 +89,38 @@ export function ServerAccordions(props: IProps): React.ReactElement {
 
   return (
     <>
-      <TextField
-        value={filter}
-        onChange={handleFilterChange}
-        autoFocus
-        InputProps={{
-          startAdornment: <SearchIcon />,
-          spellCheck: false,
-        }}
-      />
+      <Grid container>
+        <Grid item xs={4}>
+          <TextField
+            value={filter}
+            onChange={handleFilterChange}
+            autoFocus
+            InputProps={{
+              startAdornment: <SearchIcon />,
+              spellCheck: false,
+            }}
+            style={{
+              paddingTop: "8px",
+            }}
+          />
+        </Grid>
+        <Grid item xs={8}>
+          {filtered.length > 10 ? (
+            <TablePagination
+              rowsPerPageOptions={[10, 15, 20, 100]}
+              component="div"
+              count={filtered.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              ActionsComponent={TablePaginationActionsAll}
+            />
+          ) : (
+            ""
+          )}
+        </Grid>
+      </Grid>
       <List dense={true}>
         {filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((data) => {
           return (
@@ -101,16 +130,6 @@ export function ServerAccordions(props: IProps): React.ReactElement {
           );
         })}
       </List>
-      <TablePagination
-        rowsPerPageOptions={[10, 15, 20, 100]}
-        component="div"
-        count={filtered.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        ActionsComponent={TablePaginationActionsAll}
-      />
     </>
   );
 }
