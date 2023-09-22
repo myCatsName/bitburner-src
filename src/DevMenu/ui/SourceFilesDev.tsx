@@ -37,6 +37,7 @@ export function SourceFilesDev(): React.ReactElement {
 
   function clearExploits(): void {
     Player.exploits = [];
+    Player.sourceFiles.set(-1,0);
   }
 
   return (

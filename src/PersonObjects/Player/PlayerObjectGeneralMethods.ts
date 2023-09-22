@@ -1188,8 +1188,10 @@ export function canAccessGrafting(this: PlayerObject): boolean {
 }
 
 export function giveExploit(this: PlayerObject, exploit: Exploit): void {
+  let lvl = this.sourceFileLvl(-1)
   if (!this.exploits.includes(exploit)) {
     this.exploits.push(exploit);
+    this.sourceFiles.set(-1, lvl++);
     SnackbarEvents.emit("SF -1 acquired!", ToastVariant.SUCCESS, 2000);
   }
 }

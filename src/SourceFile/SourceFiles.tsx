@@ -1,4 +1,6 @@
 import React from "react";
+import { Player } from "@player";
+import { ExploitName } from "../Exploits/Exploit";
 import { SourceFile } from "./SourceFile";
 import { initBitNodes } from "../BitNode/BitNode";
 
@@ -6,6 +8,29 @@ export const SourceFiles: Record<string, SourceFile> = {};
 /** Engine initializer for SourceFiles, BitNodes, and BitNodeMultipliers. Run once at engine load. */
 export function initSourceFiles() {
   initBitNodes();
+
+  SourceFiles[`SourceFile-1`] = new SourceFile(
+    -1,
+    (
+      <>
+        This Source-File can only be acquired with obscure knowledge of the game, javascript, and the web ecosystem.
+        <br />
+        <br />
+        It increases all of the player's multipliers by 0.1%
+        <br />
+        <br />
+        You have found the following exploits:
+        <br />
+        <br />
+        {Player.exploits.map((c) => (
+          <React.Fragment key={c}>
+            * {ExploitName(c)}
+            <br />
+          </React.Fragment>
+        ))}
+      </>
+    ),
+  );
   SourceFiles.SourceFile1 = new SourceFile(
     1,
     (
@@ -193,7 +218,7 @@ export function initSourceFiles() {
     (
       <>
         This Source-File unlocks Sleeve technology, and the Grafting API in other BitNodes. Each level of this
-        Source-File also grants you a Duplicate Sleeve
+        Source-File also grants you a Duplicate Sleeve.
       </>
     ),
   );

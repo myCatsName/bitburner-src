@@ -3,48 +3,48 @@ import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import Typography from "@mui/material/Typography";
 import React, { useState } from "react";
-import { Exploit, ExploitName } from "../../Exploits/Exploit";
+import { Exploit } from "../../Exploits/Exploit";
 import { Player } from "@player";
 import { OwnedAugmentationsOrderSetting } from "../../Settings/SettingEnums";
 import { Settings } from "../../Settings/Settings";
 import { SourceFile } from "../../SourceFile/SourceFile";
 import { SourceFiles } from "../../SourceFile/SourceFiles";
 
-interface SfMinus1 {
-  info: React.ReactElement;
-  n: number;
-  name: string;
-  lvl: number;
-}
+// interface SfMinus1 {
+//   info: React.ReactElement;
+//   n: number;
+//   name: string;
+//   lvl: number;
+// }
 
-const safeGetSf = (sfNum: number): SourceFile | SfMinus1 | null => {
-  if (sfNum === -1) {
-    const sfMinus1: SfMinus1 = {
-      info: (
-        <>
-          This Source-File can only be acquired with obscure knowledge of the game, javascript, and the web ecosystem.
-          <br />
-          <br />
-          It increases all of the player's multipliers by 0.1%
-          <br />
-          <br />
-          You have found the following exploits:
-          <br />
-          <br />
-          {Player.exploits.map((c) => (
-            <React.Fragment key={c}>
-              * {ExploitName(c)}
-              <br />
-            </React.Fragment>
-          ))}
-        </>
-      ),
-      lvl: Player.exploits.length,
-      n: -1,
-      name: "Source-File -1: Exploits in the BitNodes",
-    };
-    return sfMinus1;
-  }
+const safeGetSf = (sfNum: number): SourceFile | null => {
+  // if (sfNum === -1) {
+  //   const sfMinus1: SfMinus1 = {
+  //     info: (
+  //       <>
+  //         This Source-File can only be acquired with obscure knowledge of the game, javascript, and the web ecosystem.
+  //         <br />
+  //         <br />
+  //         It increases all of the player's multipliers by 0.1%
+  //         <br />
+  //         <br />
+  //         You have found the following exploits:
+  //         <br />
+  //         <br />
+  //         {Player.exploits.map((c) => (
+  //           <React.Fragment key={c}>
+  //             * {ExploitName(c)}
+  //             <br />
+  //           </React.Fragment>
+  //         ))}
+  //       </>
+  //     ),
+  //     lvl: Player.exploits.length,
+  //     n: -1,
+  //     name: "Source-File -1: Exploits in the BitNodes",
+  //   };
+  //   return sfMinus1;
+  // }
 
   const srcFileKey = "SourceFile" + sfNum;
   const sfObj = SourceFiles[srcFileKey];
@@ -55,7 +55,7 @@ const safeGetSf = (sfNum: number): SourceFile | SfMinus1 | null => {
   return sfObj;
 };
 
-const getMaxLevel = (sfObj: SourceFile | SfMinus1): string | number => {
+const getMaxLevel = (sfObj: SourceFile): string | number => {
   let maxLevel;
   switch (sfObj.n) {
     case 12:
@@ -72,11 +72,11 @@ const getMaxLevel = (sfObj: SourceFile | SfMinus1): string | number => {
 
 export function SourceFilesElement(): React.ReactElement {
   const sourceFilesCopy = new Map(Player.sourceFiles);
-  const exploits = Player.exploits;
+   const exploits = Player.exploits.length;
   // Create a fake SF for -1, if "owned"
-  if (exploits.length > 0) {
-    sourceFilesCopy.set(-1, exploits.length);
-  }
+  // if (exploits > 0) {
+  //   sourceFilesCopy.set(-1, exploits);
+  // }
 
   const sfList = [...sourceFilesCopy];
   if (Settings.OwnedAugmentationsOrder === OwnedAugmentationsOrderSetting.Alphabetically) {
