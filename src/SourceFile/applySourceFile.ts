@@ -11,6 +11,7 @@ export function applySourceFile(bn: number, lvl: number): void {
   }
 
   switch (bn) {
+    case -1: {}
     case 1: {
       // The Source Genesis
       let mult = 0;
