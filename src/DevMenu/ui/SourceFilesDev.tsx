@@ -87,15 +87,26 @@ export function SourceFilesDev(): React.ReactElement {
                 <ButtonGroup>{buttonGroup()}</ButtonGroup>
               </td>
             </tr>
-            {validSFN.map((sfN) => (
-              <tr key={"sf-" + sfN}>
-                <td>
-                  <Typography>SF-{sfN}:</Typography>
-                </td>
-                <td>
-                  <ButtonGroup>{buttonGroup(sfN)}</ButtonGroup>
-                </td>
-              </tr>
+            {validSFN.map((sfN: number) => (
+              <React.Fragment key={"sf-" + sfN}>
+                <tr key={"sf-" + sfN +"buttonGroup"}>
+                  <td>
+                    <Typography>SF-{sfN}:</Typography>
+                  </td>
+                  <td>
+                    <ButtonGroup>{buttonGroup(sfN)}</ButtonGroup>
+                  </td>
+                </tr>
+                {sfN === 12 && (
+                  <tr key={"lots of sf-12"}>
+                    <td></td>
+                    <td>
+                      <Button style={{borderBottomColor:"green"}} onClick={setSF(12, Player.sourceFileLvl(12) + 10)}>SF-12 +10</Button>
+                      <Button style={{borderBottomColor:"green"}} onClick={setSF(12, Player.sourceFileLvl(12) + 100)}>+100</Button>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
